@@ -33,7 +33,7 @@ class TaskViewSet(TenantMixin, viewsets.ModelViewSet):
     ordering = ("-created_at",)
 
     def get_permissions(self):
-        if self.action in ("create", "destroy", "restore"):
+        if self.action in ("create", "update", "partial_update", "destroy", "restore"):
             return [IsAuthenticated(), IsManagerOrAdmin()]
         return [IsAuthenticated()]
 

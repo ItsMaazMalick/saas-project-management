@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from core.mixins import AuditLogMixin, get_client_ip
 from .models import UserRole
-from .permissions import IsCompanyAdmin
+from .permissions import IsCompanyAdmin, IsManagerOrAdmin
 from .serializers import (
     ChangePasswordSerializer,
     CompanyRegistrationSerializer,
@@ -140,8 +140,12 @@ class UserViewSet(AuditLogMixin, viewsets.ModelViewSet):
     Employees are isolated — they cannot see users from other companies.
     """
 
-    permission_classes = (IsAuthenticated, IsCompanyAdmin)
     audit_resource_type = "user"
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [IsAuthenticated(), IsManagerOrAdmin()]
+        return [IsAuthenticated(), IsCompanyAdmin()]
 
     def get_serializer_class(self):
         if self.action == "create":

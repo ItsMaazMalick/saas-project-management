@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: saas-project-management-db
+    restart: always
+    environment:
+      POSTGRES_USER: maaz_admin
+      POSTGRES_PASSWORD: maaz_password123
+      POSTGRES_DB: saas_project_management_db
+    ports:
+      - "5437:5432"
+    volumes:
+      - saas_project_management_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maaz_admin -d saas_project_management_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: saas-project-management-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - saas_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  saas_project_management_data:
+  saas_redis_data:

@@ -1,0 +1,331 @@
+{
+  "info": {
+    "name": "SaaS Project Management API",
+    "description": "Multi-tenant project management backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000/api/v1" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "project_id", "value": "" },
+    { "key": "task_id", "value": "" },
+    { "key": "user_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Company",
+          "event": [{ "listen": "test", "script": { "exec": ["const r = pm.response.json();", "if (r.tokens) {", "  pm.collectionVariables.set('access_token', r.tokens.access);", "  pm.collectionVariables.set('refresh_token', r.tokens.refresh);", "  pm.collectionVariables.set('user_id', r.user.id);", "}"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"company_name\": \"Acme Corp\",\n  \"company_domain\": \"acme.com\",\n  \"first_name\": \"Alice\",\n  \"last_name\": \"Smith\",\n  \"email\": \"alice@acme.com\",\n  \"password\": \"SecurePass123!\",\n  \"confirm_password\": \"SecurePass123!\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/register/", "host": ["{{base_url}}"], "path": ["auth", "register", ""] }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": ["const r = pm.response.json();", "if (r.access) {", "  pm.collectionVariables.set('access_token', r.access);", "  pm.collectionVariables.set('refresh_token', r.refresh);", "}"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"alice@acme.com\",\n  \"password\": \"SecurePass123!\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/login/", "host": ["{{base_url}}"], "path": ["auth", "login", ""] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{ "listen": "test", "script": { "exec": ["const r = pm.response.json();", "if (r.access) pm.collectionVariables.set('access_token', r.access);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/refresh/", "host": ["{{base_url}}"], "path": ["auth", "refresh", ""] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/logout/", "host": ["{{base_url}}"], "path": ["auth", "logout", ""] }
+          }
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/auth/me/", "host": ["{{base_url}}"], "path": ["auth", "me", ""] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"old_password\": \"SecurePass123!\",\n  \"new_password\": \"NewSecurePass456!\",\n  \"confirm_new_password\": \"NewSecurePass456!\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/change-password/", "host": ["{{base_url}}"], "path": ["auth", "change-password", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users (Admin Only)",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/users/", "host": ["{{base_url}}"], "path": ["users", ""] }
+          }
+        },
+        {
+          "name": "Create User",
+          "event": [{ "listen": "test", "script": { "exec": ["const r = pm.response.json();", "if (r.id) pm.collectionVariables.set('user_id', r.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"charlie@acme.com\",\n  \"first_name\": \"Charlie\",\n  \"last_name\": \"Brown\",\n  \"role\": \"manager\",\n  \"password\": \"SecurePass123!\",\n  \"confirm_password\": \"SecurePass123!\"\n}" },
+            "url": { "raw": "{{base_url}}/users/", "host": ["{{base_url}}"], "path": ["users", ""] }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"employee\"\n}" },
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}", ""] }
+          }
+        },
+        {
+          "name": "Soft Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}", ""] }
+          }
+        },
+        {
+          "name": "Restore User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/users/{{user_id}}/restore/", "host": ["{{base_url}}"], "path": ["users", "{{user_id}}", "restore", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "List Projects",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/projects/", "host": ["{{base_url}}"], "path": ["projects", ""] }
+          }
+        },
+        {
+          "name": "Create Project",
+          "event": [{ "listen": "test", "script": { "exec": ["const r = pm.response.json();", "if (r.id) pm.collectionVariables.set('project_id', r.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Website Redesign\",\n  \"description\": \"Redesign the company website\",\n  \"status\": \"active\",\n  \"start_date\": \"2026-06-01\",\n  \"end_date\": \"2026-09-30\"\n}" },
+            "url": { "raw": "{{base_url}}/projects/", "host": ["{{base_url}}"], "path": ["projects", ""] }
+          }
+        },
+        {
+          "name": "Get Project Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/projects/{{project_id}}/", "host": ["{{base_url}}"], "path": ["projects", "{{project_id}}", ""] }
+          }
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"on_hold\"\n}" },
+            "url": { "raw": "{{base_url}}/projects/{{project_id}}/", "host": ["{{base_url}}"], "path": ["projects", "{{project_id}}", ""] }
+          }
+        },
+        {
+          "name": "Add Member to Project",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": \"{{user_id}}\"\n}" },
+            "url": { "raw": "{{base_url}}/projects/{{project_id}}/members/", "host": ["{{base_url}}"], "path": ["projects", "{{project_id}}", "members", ""] }
+          }
+        },
+        {
+          "name": "List Project Members",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/projects/{{project_id}}/members/", "host": ["{{base_url}}"], "path": ["projects", "{{project_id}}", "members", ""] }
+          }
+        },
+        {
+          "name": "Remove Member from Project",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/projects/{{project_id}}/members/{{user_id}}/", "host": ["{{base_url}}"], "path": ["projects", "{{project_id}}", "members", "{{user_id}}", ""] }
+          }
+        },
+        {
+          "name": "List Deleted Projects",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/projects/deleted/", "host": ["{{base_url}}"], "path": ["projects", "deleted", ""] }
+          }
+        },
+        {
+          "name": "Soft Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/projects/{{project_id}}/", "host": ["{{base_url}}"], "path": ["projects", "{{project_id}}", ""] }
+          }
+        },
+        {
+          "name": "Restore Project",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/projects/{{project_id}}/restore/", "host": ["{{base_url}}"], "path": ["projects", "{{project_id}}", "restore", ""] }
+          }
+        },
+        {
+          "name": "List Deleted Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/users/deleted/", "host": ["{{base_url}}"], "path": ["users", "deleted", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "List Tasks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/tasks/", "host": ["{{base_url}}"], "path": ["tasks", ""], "query": [{ "key": "status", "value": "pending", "disabled": true }, { "key": "priority", "value": "high", "disabled": true }, { "key": "search", "value": "design", "disabled": true }] }
+          }
+        },
+        {
+          "name": "Create Task",
+          "event": [{ "listen": "test", "script": { "exec": ["const r = pm.response.json();", "if (r.id) pm.collectionVariables.set('task_id', r.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Design homepage wireframe\",\n  \"description\": \"Create detailed wireframes for the new homepage\",\n  \"project\": \"{{project_id}}\",\n  \"assigned_to\": \"{{user_id}}\",\n  \"priority\": \"high\",\n  \"status\": \"pending\",\n  \"due_date\": \"2026-07-01\"\n}" },
+            "url": { "raw": "{{base_url}}/tasks/", "host": ["{{base_url}}"], "path": ["tasks", ""] }
+          }
+        },
+        {
+          "name": "Get Task Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/tasks/{{task_id}}/", "host": ["{{base_url}}"], "path": ["tasks", "{{task_id}}", ""] }
+          }
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"priority\": \"critical\",\n  \"due_date\": \"2026-06-15\"\n}" },
+            "url": { "raw": "{{base_url}}/tasks/{{task_id}}/", "host": ["{{base_url}}"], "path": ["tasks", "{{task_id}}", ""] }
+          }
+        },
+        {
+          "name": "Update Task Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"in_progress\"\n}" },
+            "url": { "raw": "{{base_url}}/tasks/{{task_id}}/status/", "host": ["{{base_url}}"], "path": ["tasks", "{{task_id}}", "status", ""] }
+          }
+        },
+        {
+          "name": "Soft Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/tasks/{{task_id}}/", "host": ["{{base_url}}"], "path": ["tasks", "{{task_id}}", ""] }
+          }
+        },
+        {
+          "name": "Restore Task",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/tasks/{{task_id}}/restore/", "host": ["{{base_url}}"], "path": ["tasks", "{{task_id}}", "restore", ""] }
+          }
+        },
+        {
+          "name": "List Deleted Tasks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/tasks/deleted/", "host": ["{{base_url}}"], "path": ["tasks", "deleted", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Company Profile",
+      "item": [
+        {
+          "name": "Get Company Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/company/", "host": ["{{base_url}}"], "path": ["company", ""] }
+          }
+        },
+        {
+          "name": "Update Company Profile (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Acme Corporation\",\n  \"domain\": \"acme.com\",\n  \"description\": \"Leading software development company\"\n}" },
+            "url": { "raw": "{{base_url}}/company/", "host": ["{{base_url}}"], "path": ["company", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs (Admin Only)",
+      "item": [
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/audit-logs/", "host": ["{{base_url}}"], "path": ["audit-logs", ""], "query": [{ "key": "action", "value": "create", "disabled": true }, { "key": "resource_type", "value": "task", "disabled": true }, { "key": "timestamp_after", "value": "2026-01-01", "disabled": true }] }
+          }
+        }
+      ]
+    }
+  ]
+}
